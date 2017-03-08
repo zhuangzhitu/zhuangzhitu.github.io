@@ -1403,7 +1403,7 @@ a {
 }
 .article-entry code {
   background: #eee;
-  text-shadow: 0 1px #fff;
+  text-shadow: none;
   padding: 0 0.3em;
   border: none;
 }
