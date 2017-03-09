@@ -260,6 +260,288 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/08/ArrayList方法clone探究/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Fu Liu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/9735870?v=3&u=33ed681a589c432a123bbdc242b25d56a1a0ac7b&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="My way of learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/03/08/ArrayList方法clone探究/" itemprop="url">
+                  ArrayList方法clone探究
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-08T22:39:37+08:00">
+                2017-03-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</div><div class="line">	<span class="comment">// 源数组</span></div><div class="line">	<span class="keyword">static</span> ArrayList&lt;Bean&gt; beans = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">	<span class="comment">// 目标数组</span></div><div class="line">	<span class="keyword">static</span> ArrayList&lt;Bean&gt; copyBeans = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">&#125;</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bean</span> </span>&#123;</div><div class="line">	<span class="keyword">public</span> <span class="keyword">int</span> i;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>​    期望是将 <code>beans</code> 中的数据复制到 <code>copyBeans</code> 集合中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span></span>&#123;</div><div class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</div><div class="line">    beans.add(<span class="keyword">new</span> Bean(i));</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>​        ·<code>init()</code>方法中我循环创建了<code>10</code> 个对象添加到<code>beans</code> 集合中备用。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">  init();</div><div class="line">  copyBeans = (ArrayList&lt;Bean&gt;) beans.clone();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>​    初始化集合，然后 copy 集合数据赋值给另一个<code>ArrayList</code> 对象实例。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">System.out.println(beans == copyBeans); <span class="comment">//false</span></div><div class="line"></div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; beans.size(); i++) &#123;</div><div class="line">  System.out.println(beans.get(i).equals(copyBeans.get(i))); <span class="comment">// true</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; beans.size(); i++) &#123;</div><div class="line">  System.out.println(beans.get(i) == copyBeans.get(i)); <span class="comment">// true</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>​    来看下这几行代码运行结果第一个是<code>false</code> 可以理解是经过 <code>clone()</code> 确实是克隆了一份给了<code>copyBeans</code>，接下来这个也不难懂<code>equals(Object)</code> 这里的<code>equals()</code> 用的是<code>Object</code> 类中的方法，而<code>Object</code> 中这个方法实现实际 就是用 <code>==</code> 来判断和下面这个判断方法其实是一样的，那么在 <code>Java</code> 中对象如果相等证明他们所用的内存是一样的，那是不是这样的用代码来说话（具体这个 <code>equals()</code> 方法介绍请看<a href="http://www.cnblogs.com/chenssy/p/3416195.html" target="_blank" rel="external">这里</a> ）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; beans.size(); i++) &#123;</div><div class="line">  beans.get(i).i = i + <span class="number">3</span>;</div><div class="line">  System.out.println(copyBeans.get(i).i);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>​    我给源数组 <code>beans</code> 循环加 <code>3</code> 然后把同位置目标数组中的值打印输出结果所示:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="number">3</span></div><div class="line"><span class="number">4</span></div><div class="line"><span class="number">5</span></div><div class="line"><span class="number">6</span></div><div class="line"><span class="number">7</span></div><div class="line"><span class="number">8</span></div><div class="line"><span class="number">9</span></div><div class="line"><span class="number">10</span></div><div class="line"><span class="number">11</span></div><div class="line"><span class="number">12</span></div></pre></td></tr></table></figure>
+<p>​    也就充值证明了 <code>clone()</code> 后只是开辟了一个空间引用，其真正所指向的还是原来数组的内存空间只要任意一个数组有改变操作另一个也会受到影响这也就是官方注释上说的 Shallow copy。</p>
+<p>​    虽然这个搞明白了但工作中有的时候确实有这个需要<code>clone()</code> 出一个新的数组做操作但又不影响源数组的数据该怎么办呢？我也是个菜鸟目前我能想到的办法也很低级如果拉低了读到博客的人的智商表示抱歉。。。</p>
+<p>​    首先在 <code>Bean</code> 类中增加一个构造函数，参数是本类，然后把参数中的值对应的赋到对应的属性中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">Bean</span><span class="params">(Bean bean)</span> </span>&#123;</div><div class="line">  <span class="keyword">this</span>.i = bean.i;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>​    创建克隆方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> ArrayList&lt;Bean&gt; <span class="title">myClone</span><span class="params">(ArrayList&lt;Bean&gt; beans)</span> </span>&#123;</div><div class="line">  ArrayList&lt;Bean&gt; localBeans = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; beans.size(); i++) &#123;</div><div class="line">    localBeans.add(<span class="keyword">new</span> Bean(beans.get(i)));</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> localBeans;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>​    替换原来的克隆方法改为自定义的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// copyBeans = (ArrayList&lt;Bean&gt;) beans.clone();</span></div><div class="line">copyBeans = myClone(beans);</div></pre></td></tr></table></figure>
+<p>​    剩下的不变再把代码运行一次会发现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="keyword">false</span></div><div class="line"><span class="number">0</span></div><div class="line"><span class="number">1</span></div><div class="line"><span class="number">2</span></div><div class="line"><span class="number">3</span></div><div class="line"><span class="number">4</span></div><div class="line"><span class="number">5</span></div><div class="line"><span class="number">6</span></div><div class="line"><span class="number">7</span></div><div class="line"><span class="number">8</span></div><div class="line"><span class="number">9</span></div></pre></td></tr></table></figure>
+<p>​    哈两个数组完全不会互相干扰了，想怎么改不会影响对方了~~</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/08/JAVA源码学习之ArrayList-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Fu Liu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/9735870?v=3&u=33ed681a589c432a123bbdc242b25d56a1a0ac7b&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="My way of learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/03/08/JAVA源码学习之ArrayList-2/" itemprop="url">
+                  JAVA源码学习之ArrayList(2)
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-08T21:17:13+08:00">
+                2017-03-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/原创/" itemprop="url" rel="index">
+                    <span itemprop="name">原创</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>​    继续上篇博客学习<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">indexOf</span><span class="params">(Object o)</span> </span>&#123;</div><div class="line">  <span class="keyword">if</span> (o == <span class="keyword">null</span>) &#123;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; size; i++)</div><div class="line">      <span class="keyword">if</span> (elementData[i] == <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">return</span> i;</div><div class="line">      &#125;</div><div class="line">  &#125; <span class="keyword">else</span> &#123;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; size; i++)</div><div class="line">      <span class="keyword">if</span> (o.equals(elementData[i])) &#123;</div><div class="line">        <span class="keyword">return</span> i;</div><div class="line">      &#125;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> -<span class="number">1</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">lastIndexOf</span><span class="params">(Object o)</span> </span>&#123;</div><div class="line">  <span class="keyword">if</span> (o == <span class="keyword">null</span>) &#123;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = size - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--)</div><div class="line">      <span class="keyword">if</span> (elementData[i] == <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">return</span> i;</div><div class="line">      &#125;</div><div class="line">  &#125; <span class="keyword">else</span> &#123;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = size - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--)</div><div class="line">      <span class="keyword">if</span> (o.equals(elementData[i])) &#123;</div><div class="line">        <span class="keyword">return</span> i;</div><div class="line">      &#125;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> -<span class="number">1</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>​    名称上来看是用来查找一个元素是否存在数组中，如果找不到返回 <code>-1</code> ，当查找的元素为 <code>null</code> 时候遍历数组中的元素把第一个为 <code>null</code> 的元素下标返回，如果不为空依旧是遍历数组后找到对象和元素值对应第一个的下标返回，下面是查找最后一个和对象相等元素的下标基本和上一个方法原理一样，只是这个方法是从后往前遍历而已。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Returns a shallow copy of this &lt;tt&gt;ArrayList&lt;/tt&gt; instance.  (The</div><div class="line"> * elements themselves are not copied.)</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> a clone of this &lt;tt&gt;ArrayList&lt;/tt&gt; instance</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">clone</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="keyword">try</span> &#123;</div><div class="line">    ArrayList&lt;?&gt; v = (ArrayList&lt;?&gt;) <span class="keyword">super</span>.clone();</div><div class="line">    v.elementData = Arrays.copyOf(elementData, size);</div><div class="line">    v.modCount = <span class="number">0</span>;</div><div class="line">    <span class="keyword">return</span> v;</div><div class="line">  &#125; <span class="keyword">catch</span> (CloneNotSupportedException e) &#123;</div><div class="line">    <span class="comment">// this shouldn't happen, since we are Cloneable</span></div><div class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> InternalError(e);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>​    <code>clone()</code>  虽说没几行代码但还确实有点难懂，也许需要个<a href="/2017/03/08/ArrayList方法clone探究/">例子</a>来辅助来理解这个方法了。</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/07/JAVA源码学习之ArrayList/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -578,7 +860,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-count">4</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
