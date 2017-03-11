@@ -71,7 +71,7 @@
 <link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Array,JAVA,Android," />
+  <meta name="keywords" content="JAVA,Array,Android," />
 
 
 
@@ -91,7 +91,7 @@
 <meta property="og:url" content="https://flyliufu.github.io/2017/03/08/JAVA源码学习之ArrayList-2/index.html">
 <meta property="og:site_name" content="My way of learning">
 <meta property="og:description" content="​    继续上篇博客学习1234567891011121314151617181920212223242526272829public int indexOf(Object o) &amp;#123;  if (o == null) &amp;#123;    for (int i = 0; i &amp;lt; size; i++)      if (elementData[i] == null) &amp;#123;">
-<meta property="og:updated_time" content="2017-03-08T15:54:31.000Z">
+<meta property="og:updated_time" content="2017-03-10T07:13:20.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JAVA源码学习之ArrayList(2)">
 <meta name="twitter:description" content="​    继续上篇博客学习1234567891011121314151617181920212223242526272829public int indexOf(Object o) &amp;#123;  if (o == null) &amp;#123;    for (int i = 0; i &amp;lt; size; i++)      if (elementData[i] == null) &amp;#123;">
@@ -376,6 +376,8 @@
 <p>​    名称上来看是用来查找一个元素是否存在数组中，如果找不到返回 <code>-1</code> ，当查找的元素为 <code>null</code> 时候遍历数组中的元素把第一个为 <code>null</code> 的元素下标返回，如果不为空依旧是遍历数组后找到对象和元素值对应第一个的下标返回，下面是查找最后一个和对象相等元素的下标基本和上一个方法原理一样，只是这个方法是从后往前遍历而已。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Returns a shallow copy of this &lt;tt&gt;ArrayList&lt;/tt&gt; instance.  (The</div><div class="line"> * elements themselves are not copied.)</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> a clone of this &lt;tt&gt;ArrayList&lt;/tt&gt; instance</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">clone</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="keyword">try</span> &#123;</div><div class="line">    ArrayList&lt;?&gt; v = (ArrayList&lt;?&gt;) <span class="keyword">super</span>.clone();</div><div class="line">    v.elementData = Arrays.copyOf(elementData, size);</div><div class="line">    v.modCount = <span class="number">0</span>;</div><div class="line">    <span class="keyword">return</span> v;</div><div class="line">  &#125; <span class="keyword">catch</span> (CloneNotSupportedException e) &#123;</div><div class="line">    <span class="comment">// this shouldn't happen, since we are Cloneable</span></div><div class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> InternalError(e);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>​    <code>clone()</code>  虽说没几行代码但还确实有点难懂，也许需要个<a href="/2017/03/08/ArrayList方法clone探究/">例子</a>来辅助来理解这个方法了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</div><div class="line"><span class="keyword">public</span> &lt;T&gt; T[] toArray(T[] a) &#123;</div><div class="line">  <span class="keyword">if</span> (a.length &lt; size)</div><div class="line">  <span class="comment">// Make a new array of a's runtime type, but my contents:</span></div><div class="line">  &#123;</div><div class="line">    <span class="keyword">return</span> (T[]) Arrays.copyOf(elementData, size, a.getClass());</div><div class="line">  &#125;</div><div class="line">  System.arraycopy(elementData, <span class="number">0</span>, a, <span class="number">0</span>, size);</div><div class="line">  <span class="keyword">if</span> (a.length &gt; size) &#123;</div><div class="line">    a[size] = <span class="keyword">null</span>;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> a;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>​    <code>toArray(T[])</code> 看到这个方法很是懵啊，<code>ArrayList&lt;E&gt;</code> 声明时候是用的 <code>E</code> 这个方法怎么是用的 <code>T</code> 很是不理解这种设计的思路上网查了些<a href="http://www.cnblogs.com/xiaomiganfan/p/5362732.html" target="_blank" rel="external">资料</a>后明白了一些原由，不管当初是为啥这样设计反正已经这样了用的时候加小心就成了，代码的意思主要难在第一个<code>if</code> 块了，判断<code>T[]</code> 的长度和当前集合长度谁大，如果传入数组长度小就执行<code>if</code> 里面，</p>
 
       
     </div>
@@ -399,9 +401,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Array/" rel="tag"># Array</a>
-          
             <a href="/tags/JAVA/" rel="tag"># JAVA</a>
+          
+            <a href="/tags/Array/" rel="tag"># Array</a>
           
             <a href="/tags/Android/" rel="tag"># Android</a>
           
@@ -495,7 +497,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-count">5</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -517,7 +519,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-count">4</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
