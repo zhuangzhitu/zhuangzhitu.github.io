@@ -95,7 +95,7 @@
 <meta property="og:description" content="copyOf​    在学习 ArrayList 时候遇到很多地方全用到了 Arrays.copyOf() 方法，搞不清楚这个方法感觉学习 ArrayList 会遇到一些阅读困难啊，所以专门写个关于这个方法及相关方法的学习贴吧。
 ​    copyOf() 及其相关方法如此之多光这一个方法就有五六个重载方法但万变不离其宗其实重载方法的含义是一样，这只把几个特殊的方法拿出来研究一下
 123publi">
-<meta property="og:updated_time" content="2017-03-11T09:53:40.000Z">
+<meta property="og:updated_time" content="2017-03-13T08:47:48.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="copyOf相关方法总结">
 <meta name="twitter:description" content="copyOf​    在学习 ArrayList 时候遇到很多地方全用到了 Arrays.copyOf() 方法，搞不清楚这个方法感觉学习 ArrayList 会遇到一些阅读困难啊，所以专门写个关于这个方法及相关方法的学习贴吧。
@@ -196,7 +196,7 @@
       
         
         <li class="menu-item menu-item-home">
-          <a href="/" rel="section">
+          <a href="/about" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
@@ -310,6 +310,28 @@
           </span>
 
           
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/原创/" itemprop="url" rel="index">
+                    <span itemprop="name">原创</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -363,16 +385,8 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T, U&gt; T[] copyOf(U[] original, <span class="keyword">int</span> newLength, Class&lt;? extends T[]&gt; newType) &#123;</div><div class="line">  <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</div><div class="line">  T[] copy = ((Object) newType == (Object) Object[].class) ? (T[]) <span class="keyword">new</span> Object[newLength] :</div><div class="line">  (T[]) Array.newInstance(newType.getComponentType(), newLength);</div><div class="line"></div><div class="line">  System.arraycopy(original, <span class="number">0</span>, copy, <span class="number">0</span>, Math.min(original.length, newLength));</div><div class="line">  <span class="keyword">return</span> copy;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>​    这个方法牛逼大了啊，泛型还是两个首先来解释下参数第一个是原始数组参数，第二个参数是新数组的长度，第三个参数是生成后新数组类的类型这个类型必须是个数组类型像 <code>String[].getClass()</code>，<code>Integer[].getClass()</code>，<code>Number[].getClass()</code>，等都可以，但不可以是<code>String.getClass()</code>这种类型好吧，很容易理解。方法代码部分第一句话有点长用了一个三目运算符条件是参数类型是否是<code>Object[]</code> 类型 如果是就直接实例化出一个<code>Object[]</code> 数组长为 <code>newLength</code> ，如果不是。。。就创建出一个数组，<code>Class.getComponentType()</code> 该方法只有当参数是个数组的时候才返回值如果不是数组只返回 <code>null</code> ，不懂就自己写个例子看看。</p>
 <p>​    上一步最终会创建出一个数组，然后调用 <code>System.arraycopy([],int,[],int,int)</code> 这个方法没什么可说的，主要是最后一个参数是告诉方法复制的数组长度是多少，最后返回创建的数组这个方法叫 <code>copyOf</code> 但看方法实现更像是 <code>newAndCopyOf</code> 我是这么理解的有更好的请指点一二谢谢。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function">E <span class="title">elementData</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</div><div class="line">  <span class="keyword">return</span> (E) elementData[index];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>​    返回数组中下标为 <code>index</code> 的元素，这个方法没有对 <code>index</code> 校验，所以 <code>Java</code> 也没把他设置成可外部访问的方法。 </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">rangeCheck</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</div><div class="line">  <span class="keyword">if</span> (index &gt;= size) &#123;</div><div class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> IndexOutOfBoundsException(outOfBoundsMsg(index));</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">private</span> String <span class="title">outOfBoundsMsg</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</div><div class="line">  <span class="keyword">return</span> <span class="string">"Index: "</span> + index + <span class="string">", Size: "</span> + size;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>​    只是内部公用的用来公共检查<code>index</code> 是否合法会抛出运行时异常 <code>IndexOutOfBoundsException</code>，另一个方法只是返回一个字符串告诉下标和<code>size</code> 的值。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> E <span class="title">get</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</div><div class="line">  rangeCheck(index);</div><div class="line">  <span class="keyword">return</span> elementData(index);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>​        <code>ArrayList</code> 是常用的方法之一，<code>get(int)</code> 其实现很简单，先是校验 <code>index</code> 的合法性，之后调用查找元素的方法把对应元素返回。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> E <span class="title">set</span><span class="params">(<span class="keyword">int</span> index, E element)</span> </span>&#123;</div><div class="line">  rangeCheck(index);</div><div class="line">  E oldValue = elementData(index);</div><div class="line">  elementData[index] = element;</div><div class="line">  <span class="keyword">return</span> oldValue;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>​    该方法也很容易功能就是把指定下标的元素替换为新元素，并返回被替换掉的元素。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">add</span><span class="params">(E e)</span> </span>&#123;</div><div class="line">  ensureCapacityInternal(size + <span class="number">1</span>);  <span class="comment">// Increments modCount!!</span></div><div class="line">  elementData[size++] = e;</div><div class="line">  <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>​    这个方法很简单但功能确是很重要    </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] copyOf(<span class="keyword">byte</span>[] original, <span class="keyword">int</span> newLength) &#123;</div><div class="line">  <span class="keyword">byte</span>[] copy = <span class="keyword">new</span> <span class="keyword">byte</span>[newLength];</div><div class="line">  System.arraycopy(original, <span class="number">0</span>, copy, <span class="number">0</span>, Math.min(original.length, newLength));</div><div class="line">  <span class="keyword">return</span> copy;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>​    还有很多这种重载方法，但除了类型不一样其他的都是一样的只看一个就可以了，而且这个方法好像也不难。</p>
 
       
     </div>
@@ -420,6 +434,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/12/JAVA源码学习之ArrayList-3/" rel="prev" title="JAVA源码学习之ArrayList(3)">
+                JAVA源码学习之ArrayList(3) <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -495,7 +513,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
